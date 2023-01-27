@@ -9,10 +9,6 @@ def is_compiled():
     else:
         raise Exception('Cannot determine if compiled or not')
 
-def pad_id(id):
-    return str(id).zfill(24)
-    # return str(id).rjust(24, '0')
-
 with open('emojiIndex.json', 'r', encoding='utf8') as f:
     emoji_index = json.load(f)
 

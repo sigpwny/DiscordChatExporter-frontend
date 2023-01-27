@@ -22,42 +22,6 @@ class GuildPreprocess:
         self.output_dir = output_dir
 
     ## if any field in data has key 'id', pad it with zeros for fast sorting
-    def pad_ids(self, data):
-        data['guild']['id'] = helpers.pad_id(data['guild']['id'])
-        data['channel']['id'] = helpers.pad_id(data['channel']['id'])
-
-        data['channel']['categoryId'] = helpers.pad_id(data['channel']['categoryId'])
-
-
-        # for message in data.messages:
-        for message in data['messages']:
-            message['id'] = helpers.pad_id(message['id'])
-            message['author']['id'] = helpers.pad_id(message['author']['id'])
-
-            for reaction in message['reactions']:
-                reaction['emoji']['id'] = helpers.pad_id(reaction['emoji']['id'])
-
-            # mentions
-            for mention in message['mentions']:
-                mention['id'] = helpers.pad_id(mention['id'])
-
-            # attachments
-            for attachment in message['attachments']:
-                attachment['id'] = helpers.pad_id(attachment['id'])
-
-            # sticker
-            for sticker in message['stickers']:
-                sticker['id'] = helpers.pad_id(sticker['id'])
-
-            if 'reference' in message:
-                if message['reference']['messageId'] is not None:
-                    message['reference']['messageId'] = helpers.pad_id(message['reference']['messageId'])
-                if message['reference']['channelId'] is not None:
-                    message['reference']['channelId'] = helpers.pad_id(message['reference']['channelId'])
-                if message['reference']['guildId'] is not None:
-                    message['reference']['guildId'] = helpers.pad_id(message['reference']['guildId'])
-        return data
-
     def _merge_messages(self, message1, message2):
         """
         smart merge of two messages
@@ -70,7 +34,7 @@ class GuildPreprocess:
             newer_message = message1
             older_message = message2
         else:
-            newer_message = message2
+            newer_message = message2    
             older_message = message1
 
         # Prefer local media over remote media even if that means that we are working with older data
@@ -100,8 +64,6 @@ class GuildPreprocess:
             with open(path, 'r', encoding="utf8") as f:
                 # print("Reading file: " + path)
                 data = json.load(f)
-                # message_ids_by_files.append([int(message['id']) for message in data['messages']])
-                data = self.pad_ids(data)
                 channel = data['channel']
 
                 message_ids_in_file = [int(message['id']) for message in data['messages']]
@@ -174,10 +136,10 @@ class GuildPreprocess:
 
         # tag messages
         for message_id in deleted_message_ids:
-            messages[helpers.pad_id(message_id)]['isDeleted'] = True
+            messages[message_id]['isDeleted'] = True
         for message_id in messages:
             if 'isDeleted' not in messages[message_id]:
-                messages[helpers.pad_id(message_id)]['isDeleted'] = False
+                messages[message_id]['isDeleted'] = False
         return messages
 
     def simulate_thread_creation(self, channels, messages):
@@ -215,7 +177,7 @@ class GuildPreprocess:
             thread = channels[thread_id]
 
             first_message_in_thread = first_messages_in_channels[thread_id]
-            thread_id_plus_one = helpers.pad_id(int(thread_id) + 1)  # if we don't increment, we would overwrite the first message before the thread was created
+            thread_id_plus_one = str(int(thread_id) + 1)  # if we don't increment, we would overwrite the first message before the thread was created
             fake_thread_created_message = {
                 'id': thread_id_plus_one,
                 'type': "ThreadCreated",
